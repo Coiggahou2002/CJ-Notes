@@ -1,0 +1,90 @@
+# 前缀树 Trie
+
+## 模板
+
+### 1. 数组模拟
+
+```cpp
+int son[N][26], cnt[N], idx;
+// 0号点既是根节点，又是空节点
+// son[][]存储树中每个节点的子节点
+// cnt[]存储以每个节点结尾的单词数量
+
+// 插入一个字符串
+void insert(char *str)
+{
+    int p = 0;
+    for (int i = 0; str[i]; i ++ )
+    {
+        int u = str[i] - 'a';
+        if (!son[p][u]) son[p][u] = ++ idx;
+        p = son[p][u];
+    }
+    cnt[p] ++ ;
+}
+
+// 查询字符串出现的次数
+int query(char *str)
+{
+    int p = 0;
+    for (int i = 0; str[i]; i ++ )
+    {
+        int u = str[i] - 'a';
+        if (!son[p][u]) return 0;
+        p = son[p][u];
+    }
+    return cnt[p];
+}
+```
+
+### 2. C++ 实现
+
+```cpp
+class TrieNode {
+public:
+    //记录此结点是否为单词结尾
+    bool isEnd;
+
+    //存放26个字母儿子的地址，若无该儿子则地址为NULL
+    TrieNode* son[26];
+    
+    //初始化的该TrieNode就是Trie的根节点，就代表Trie
+    TrieNode() {
+        isEnd = false;
+        memset(son, 0, sizeof(son));
+    }
+    
+    //插入单词
+    void insert(string word) {
+        TrieNode* p = this;
+        for (char s : word) {
+            int u = s - 'a'; //用0-25映射a-z
+            if (p->son[u] == NULL) p->son[u] = new TrieNode();
+            p = p->son[u];
+        }
+        p->isEnd = true;
+    }
+    
+    //询问所给单词是否存在于Trie中
+    bool search(string word) {
+        TrieNode* p = this;
+        for (char s : word) {
+            int u = s - 'a';
+            if (p->son[u] == NULL) return false;
+            p = p->son[u];
+        }
+        return p->isEnd;
+    }
+    
+    //询问所给串是否为Trie中某个单词的前缀
+    bool startsWith(string prefix) {
+        TrieNode* p = this;
+        for (char s : prefix) {
+            int u = s - 'a';
+            if (p->son[u] == NULL) return false;
+            p = p->son[u];
+        }
+        return true; //只要能完整检索到，就说明前缀存在
+    }
+};
+```
