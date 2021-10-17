@@ -1,2 +1,2 @@
-# Full-Stack-Notes
-My notes for both front-end and back-end.
+# CJ-Notes
+CJ 在此整理他的技术笔记，记录成长历程.
