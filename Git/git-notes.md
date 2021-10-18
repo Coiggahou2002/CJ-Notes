@@ -60,3 +60,8 @@ git commit -m "commit_message"
 git remote add origin <remote_repo_url>
 git push origin main
 ```
+
+# 经验
+
+1.每次打开本地仓库进行开发之前，先拉取一下最新的远程分支
+
