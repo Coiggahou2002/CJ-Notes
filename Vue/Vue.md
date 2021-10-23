@@ -184,3 +184,172 @@ const obs = new Observer(data);
 methods 中的所有函数，都会直接出现在 Vue 实例上，而且不做数据代理（因为函数作代理没有意义）
 
 > 如果把函数写在了 data 中，也能使用，而且 Vue 实例会对这个函数做代理，但没必要，属于浪费资源
+
+## 组件通信
+
+### 父传子
+
+**父组件通过给 `props` 给子组件传值.**
+
+通过一个简单例子来说明，场景如下：
+
+父组件是一个显示文章的页面视图，子组件叫 `MarkdownContent`，能将 Markdown 字符串渲染成 HTML 字符串，每次用户打开一篇文章，父组件都需要向服务端发请求，拿到 Markdown 字符串格式的文章，然后交给子组件渲染，所以产生了向子组件传值的需求.
+
+父组件中需要通过 `v-bind:子组件属性名` 传入数据，如下
+
+```vue
+<!--父组件中通过:attribute形式给子组件传值-->
+
+<template>
+  <MarkdownContent :markdownContent="comment.content"/>
+</template>
+
+<script>
+import MarkdownContent from "./MarkdownContent";
+export default {
+  components: {
+    MarkdownContent  
+  },
+  data() {
+    return {
+      comment: {
+        author: '',
+        content: ''
+      }
+    }
+  }
+}
+</script>
+```
+
+子组件中需要设置相应的 `props`，并设置好数据绑定
+
+```vue
+<template>
+  <mavon-editor v-model="markdownContent">
+  </mavon-editor>
+</template>
+
+<script>
+export default {
+  props: {
+    markdownContent: {
+      type: String,
+        default: '',
+        required: true
+    }
+  }
+}
+</script>
+```
+
+### 子传父
+
+子组件通过 `this.$emit('向外暴露事件名'，携带数据)` 来向父组件传值.
+
+举例说明，场景如下：
+
+父组件是一个评论区页面，子组件是一个简单的 Markdown 文本编辑框加上一个“提交”按钮，现在我们希望，当用户输入了评论并点击了子组件里的“提交”按钮时，父组件能够收到通知并拿到这份评论文本，通过 HTTP 请求发给服务端.
+
+我们可以这么做：
+
+给子组件的提交按钮绑定一个处理事件，在该事件中 `emit`
+
+```vue
+<template>
+  <mavon-editor v-model="content"/>
+  <v-btn @click="handleCommit">
+    发表评论
+  </v-btn>
+</template>
+<script>
+export default {
+  data() {
+    return {
+      content: '',
+    }
+  }
+  methods: {
+    handleCommit() {
+      this.$emit('onCommit', this.content)
+    }
+  }
+}
+</script>
+```
+
+同时，在父组件中通过 `v-on:子组件emit的函数名="父组件中某个处理函数(接收emit的数据参数)"`来感知
+
+```vue
+<template>
+  <Comments @onCommit="commitToServer"/>
+</template>
+<script>
+export default {
+  methods: {
+    commitToServer(contentOfComment) {
+      HttpService({
+        url: '...',
+        method: 'post',
+        data: {
+          comment: contentOfComment
+        }
+      })
+    }
+  }
+}
+</script>
+```
+
+### 兄弟组件之间传
+
+待补充
+
+### 父组件从子组件取数据
+
+如果并不需要“子组件触发某事件时父组件收到通知”的效果，而仅仅只需要让父组件取出子组件的数据，可以通过 `this.$refs` 来实现.
+
+例如，子组件是一个文本框，父组件希望点击按钮时，能够直接取出子组件文本框的内容
+
+如下，子组件做自己就好，不需要做任何特殊的准备
+
+```vue
+<!--子组件-->
+<template>
+  <v-text-field v-model="text"></v-text-field>
+</template>
+<script>
+export default {
+  name: 'ChildComponent',
+  data() {
+    return {
+      text: ''
+    }
+  },
+}
+</script>
+```
+
+父组件中，需要给子组件加一个 `ref` 属性，也就是引用名，加上就可以取数据了
+
+```vue
+<!--父组件-->
+<template>
+  <ChildComponent ref="myChild"/>
+  <v-btn @click="getText"></v-btn>
+</template>
+<script>
+import ChildComponent from '...'
+export default {
+  components: {
+    ChildComponent
+  },
+  methods: {
+    getText() {
+      console.log(this.$refs.myChild.text);
+    }
+  }
+}
+</script>
+```
+
