@@ -5,7 +5,7 @@
 翻转字符串
 
 ```javas
-myStr.split('').reverse().jo
+myStr.split('').reverse().join()
 ```
 
 ## 随机数
