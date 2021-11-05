@@ -91,3 +91,26 @@ function Observer(obj) {
 
 const obs = new Observer(data);
 ```
+
+## 生命周期
+
+### 流程图
+
+![](https://cjpark-1304138896.cos.ap-guangzhou.myqcloud.com/note_img/20211105112449.png)
+
+| 生命周期钩子  | 描述                            |
+| ------------- | ------------------------------- |
+| beforeCreate  | 组件实例被创建之前              |
+| created       | 组件实例刚创建完                |
+| beforeMount   | 组件被挂载之前                  |
+| mounted       | 组件挂载到实例上之后            |
+| beforeUpdate  | 组件数据发生变化，数据更新之前  |
+| updated       | 组件数据更新之后                |
+| beforeDestroy | 组件实例销毁之前                |
+| destroyed     | 组件实例销毁之后                |
+| activated     | keep-alive 缓存的组件激活时     |
+| deactivated   | keep-alive 缓存的组件停用时调用 |
+| errorCaptured | 捕获来自子孙组件的错误时调用    |
+
+> 不能使用箭头函数来定义一个生命周期方法，例如 `created: () => this.doSomething();`
+

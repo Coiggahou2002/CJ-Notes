@@ -69,3 +69,18 @@
 `Ctrl` + `Shift` + `O` 文件内代码符号快速搜索 + 跳转
 
 `Ctrl` + `T` 项目内代码符号快速搜索 + 跳转
+
+`Ctrl` + `F` 单文件内字符串搜索
+
+`Ctrl` + `Shift` + `F` 全局字符串搜索
+
+## 编辑器配置
+
+### 针对不同语言设置缩进
+
+`settings.json` 里添加
+```json
+"[javascript]": {
+    "editor.tabSize": 2,
+}
+```

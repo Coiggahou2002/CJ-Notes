@@ -33,15 +33,130 @@ data 中的所有属性，最终都在 Vue 实例身上.
 
 其实 Vue 实例中所有的属性，都可以在模板中直接使用，如 `<div> {{ $ref }} </div>` 也可以展示出它的值
 
-### 常用指令
+### 关于 data
 
-+ `v-if` 条件渲染
-+ `v-for` 列表渲染
-+ `v-bind` 或 `:` 属性和变量绑定
-+ `v-on` 或 `@` 事件绑定
-+ `v-model` 双向数据绑定
+手动创建 Vue 实例 `new Vue(...)` 的时候，里面的 `data` 可以直接定义为对象
+
+但在 Vue 组件中的 `data` 必须定义为一个返回 `Object` 的函数，如
+
+```javascript
+// 下面三种写法都是将d定义为函数，都可以用
+data: function() {
+  return {...}
+}
+
+data() {
+  return {...}
+}
+
+data: () => {
+  return {...}
+}
+```
+
+源码 `/src/core/util/options.js` 中可以看到对 `data` 的类型判断和提示
+
+![](https://cjpark-1304138896.cos.ap-guangzhou.myqcloud.com/note_img/20211105145136.png)
+
+究其原因，我们分析一下：
+
+但凡我们会封装一个 Vue 组件，就意味着我们需要在多个地方使用它，也就是需要复用这个组件，而多个被复用的组件必然是相互隔离的，其中自然也包括它们的数据，必须是相互隔离、不可见的.
+
+如果我们在组件中将 `data` 定义为一个对象，这个对象就被写在了堆内存中，而该组件的多个实例都共用这个地址中的对象，那么就会导致组件的实例 A 改动了 `data`，实例 B 中的 `data` 也会跟着变化，因为它们其实操作的是同一个内存地址中的对象.
+
+这样显然是不对的，理想的情况应该是每个组件实例被创建的时候，`data` 都会整个被复制一份.
+
+如果我们在组件中将 `data` 定义为一个返回对象的函数，就能够达到这样的效果，因为由函数返回的对象，内存地址是不相同的，也就是同一组件的所有实例用的 `data` 都不相同.
+
+## 常用指令
+
+### 条件渲染
+
+`v-if` 和 `v-show` 都可以控制条件渲染
+
+两者的区别：
+
+### 列表渲染
+
+#### 基本用法
+
+```vue
+<ol>
+    <li v-for="(item, index) in items" :key="index">
+        {{ item.label }}
+    </li>
+</ol>
+```
+
+官方建议设置 `v-bind:key` 也就是 `key` 值，并确保它独一无二，这便于底层 diff 算法进行优化.
+
+#### 为什么永远不要将 v-if 和 v-for 放在同一标签使用？
+
+下面是 Vue 2.6 的部分源码截取
+
+```javascript
+// vue-2.6.14/src/compiler/codegen/index.js
+export function genElement (el: ASTElement, state: CodegenState): string {
+  if (el.parent) {
+    el.pre = el.pre || el.parent.pre
+  }
+
+  if (el.staticRoot && !el.staticProcessed) {
+    return genStatic(el, state)
+  } else if (el.once && !el.onceProcessed) {
+    return genOnce(el, state)
+  } else if (el.for && !el.forProcessed) {
+    return genFor(el, state)
+  } else if (el.if && !el.ifProcessed) {
+    return genIf(el, state)
+  } else if (el.tag === 'template' && !el.slotTarget && !state.pre) {
+    return genChildren(el, state) || 'void 0'
+  } else if (el.tag === 'slot') {
+    return genSlot(el, state)
+  } else {
+    // component or element
+    // ...
+  }
+}
+```
+
+从源码中可见，在生成一个 element 的时候，`v-for` 比 `v-if` 先判断，即 `v-for` 优先级比 `v-if` 更高.
+
+换句话说，如果你以类似下面的方式使用它们，就会导致每次渲染都会先执行循环再进行条件判断，造成性能的浪费
+
+```vue
+<template>
+  <ol>
+    <li v-if="isShow" v-for="(item, index) in items" :key="index">
+      {{ item.content }}
+    </li>
+  </ol>
+</template>
+```
+
+如果希望通过变量控制一个列表是否显示，正确做法是套一个 `<template>` 在外面，并把 `v-if` 写在 `<template>` 上
+
+```vue
+<template v-if="isShow">
+  <ol>
+    <li v-for="(item, index) in items" :key="index">
+      {{ item.content }}
+    </li>
+  </ol>
+</template>
+```
 
 
+
+### 属性和变量绑定
+
+使用 `v-bind` 或直接用冒号 `:` 
+
+### 事件绑定
+
+使用 `v-on` 或者 `@`
+
+### 双向数据绑定
 
 
 ## 组件分析
@@ -85,175 +200,3 @@ data 中的所有属性，最终都在 Vue 实例身上.
 methods 中的所有函数，都会直接出现在 Vue 实例上，而且不做数据代理（因为函数作代理没有意义）
 
 > 如果把函数写在了 data 中，也能使用，而且 Vue 实例会对这个函数做代理，但没必要，属于浪费资源
-
-## 组件通信
-
-### 父传子
-
-**父组件通过给 `props` 给子组件传值.**
-
-通过一个简单例子来说明，场景如下：
-
-父组件是一个显示文章的页面视图，子组件叫 `MarkdownContent`，能将 Markdown 字符串渲染成 HTML 字符串，每次用户打开一篇文章，父组件都需要向服务端发请求，拿到 Markdown 字符串格式的文章，然后交给子组件渲染，所以产生了向子组件传值的需求.
-
-父组件中需要通过 `v-bind:子组件属性名` 传入数据，如下
-
-```vue
-<!--父组件中通过:attribute形式给子组件传值-->
-
-<template>
-  <MarkdownContent :markdownContent="comment.content"/>
-</template>
-
-<script>
-import MarkdownContent from "./MarkdownContent";
-export default {
-  components: {
-    MarkdownContent  
-  },
-  data() {
-    return {
-      comment: {
-        author: '',
-        content: ''
-      }
-    }
-  }
-}
-</script>
-```
-
-子组件中需要设置相应的 `props`，并设置好数据绑定
-
-```vue
-<template>
-  <mavon-editor v-model="markdownContent">
-  </mavon-editor>
-</template>
-
-<script>
-export default {
-  props: {
-    markdownContent: {
-      type: String,
-        default: '',
-        required: true
-    }
-  }
-}
-</script>
-```
-
-### 子传父
-
-子组件通过 `this.$emit('向外暴露事件名'，携带数据)` 来向父组件传值.
-
-举例说明，场景如下：
-
-父组件是一个评论区页面，子组件是一个简单的 Markdown 文本编辑框加上一个“提交”按钮，现在我们希望，当用户输入了评论并点击了子组件里的“提交”按钮时，父组件能够收到通知并拿到这份评论文本，通过 HTTP 请求发给服务端.
-
-我们可以这么做：
-
-给子组件的提交按钮绑定一个处理事件，在该事件中 `emit`
-
-```vue
-<template>
-  <mavon-editor v-model="content"/>
-  <v-btn @click="handleCommit">
-    发表评论
-  </v-btn>
-</template>
-<script>
-export default {
-  data() {
-    return {
-      content: '',
-    }
-  }
-  methods: {
-    handleCommit() {
-      this.$emit('onCommit', this.content)
-    }
-  }
-}
-</script>
-```
-
-同时，在父组件中通过 `v-on:子组件emit的函数名="父组件中某个处理函数(接收emit的数据参数)"`来感知
-
-```vue
-<template>
-  <Comments @onCommit="commitToServer"/>
-</template>
-<script>
-export default {
-  methods: {
-    commitToServer(contentOfComment) {
-      HttpService({
-        url: '...',
-        method: 'post',
-        data: {
-          comment: contentOfComment
-        }
-      })
-    }
-  }
-}
-</script>
-```
-
-### 兄弟组件之间传
-
-待补充
-
-### 父组件从子组件取数据
-
-如果并不需要“子组件触发某事件时父组件收到通知”的效果，而仅仅只需要让父组件取出子组件的数据，可以通过 `this.$refs` 来实现.
-
-例如，子组件是一个文本框，父组件希望点击按钮时，能够直接取出子组件文本框的内容
-
-如下，子组件做自己就好，不需要做任何特殊的准备
-
-```vue
-<!--子组件-->
-<template>
-  <v-text-field v-model="text"></v-text-field>
-</template>
-<script>
-export default {
-  name: 'ChildComponent',
-  data() {
-    return {
-      text: ''
-    }
-  },
-}
-</script>
-```
-
-父组件中，需要给子组件加一个 `ref` 属性，也就是引用名，加上就可以取数据了
-
-```vue
-<!--父组件-->
-<template>
-  <ChildComponent ref="myChild"/>
-  <v-btn @click="getText"></v-btn>
-</template>
-<script>
-import ChildComponent from '...'
-export default {
-  components: {
-    ChildComponent
-  },
-  methods: {
-    getText() {
-      console.log(this.$refs.myChild.text);
-    }
-  }
-}
-</script>
-```
-
-## 生命周期
-
-![](https://cjpark-1304138896.cos.ap-guangzhou.myqcloud.com/note_img/20211105112449.png)
