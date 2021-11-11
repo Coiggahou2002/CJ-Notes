@@ -2,9 +2,238 @@
 
 [toc]
 
+## 力扣 1290. 二进制链表转整数
+
+https://leetcode-cn.com/problems/convert-binary-number-in-a-linked-list-to-integer/
+
+**辅助栈法**
+
+用辅助栈将链表数据反向取出，按转换算法转成十进制。
+
+```java
+class Solution {
+    public int getDecimalValue(ListNode head) {
+        if (head.next == null) {
+            return head.val;
+        }
+        //以下处理的链表长度大于1
+        int p = 0;
+        int count = 0;
+        Stack<Integer> stk = new Stack<Integer>();
+        ListNode x;
+        for (x = head; x != null; x = x.next) {
+            stk.push(x.val);
+            count++;
+        }
+        int sum = 0;
+        for (int i = 0; i < count; i++) {
+            sum += stk.pop() * Math.pow(2,p);
+            p++;
+        }
+        return sum;
+    }
+}
+```
+**移位法**
+
+顺序遍历链表，每次将 `sum` 左移一位，再加上 `x.val`.
+
+```java
+class Solution {
+    public int getDecimalValue(ListNode head) {
+        if (head.next == null) return head.val;
+        int sum = 0;
+        ListNode x;
+        for (x = head; x != null; x = x.next) {
+            sum = (sum << 1) + x.val;
+        }
+        return sum;
+    }
+}
+```
+
+## 力扣 876. 链表的中间节点
+
+https://leetcode-cn.com/problems/middle-of-the-linked-list/
+
+**操作方法**
+
+此题是典型的快慢指针题，快指针 `fast` 和慢指针 `slow` 从同一起点出发，`fast` 每次走2步，`slow` 每次走1步，当 `fast` 走到链表尾时，`slow` 正好处于链表中点，剩余的细节用 `corner case` 微调即可。
+
+
+**代码实现**
+
+```java
+class Solution {
+    public ListNode middleNode(ListNode head) {
+        if (head.next == null) return head; //单元素链表，返回自己
+        if (head.next.next == null) return head.next;
+        //以下处理的链表长度至少为3
+        ListNode slow, fast;
+        slow = head;
+        fast = head;
+        while (fast != null && fast.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+        }
+        return slow;
+    }
+}
+```
+
+**拓展**
+
+如果对快慢指针步长的倍数关系进行调整，应该还能够实现返回链表的几分之一位置的节点，具体实现待补充。
+
+## 剑指Offer 22. 返回链表倒数第k个节点
+
+https://leetcode-cn.com/problems/lian-biao-zhong-dao-shu-di-kge-jie-dian-lcof/
+
+**两次遍历法**
+
+先扫描整个链表获取长度 `count` ，重新扫描一次到 `count - k` 位置即可获取倒数第k个节点。
+
+```java
+class Solution {
+    public ListNode getKthFromEnd(ListNode head, int k) {
+        if (head == null) return null;
+        if (head.next == null) return head;
+
+        ListNode x;
+        int count = 0;
+        for (x = head; x.next != null; x = x.next) {
+            count++;
+        }
+        x = head;
+        for (int i = 0; i <= count - k; i++) {
+            x = x.next;
+        }
+        return x;
+    }
+}
+```
+**定距同步双指针**
+
+开局先定义两个指针 `p1` 和 `p2`，都指向 `head` ，然后控制它们起始距离为 `k`，然后同步前进，当领先的指针走到表尾时，后面的指针恰好到达第k个节点。
+
+```java
+class Solution {
+    public ListNode getKthFromEnd(ListNode head, int k) {
+        if (head == null) return null;
+        if (head.next == null) return head;
+
+        ListNode p1;
+        ListNode p2;
+        p1 = head;
+        p2 = head;
+        for (int i = 0; i < k; i++) {
+            p2 = p2.next;
+        }
+        while (p2 != null) {
+            p1 = p1.next;
+            p2 = p2.next;
+        }
+        return p1;
+    }
+}
+```
+
+## 力扣 237. 删除链表中的给定节点
+
+https://leetcode-cn.com/problems/delete-node-in-a-linked-list/
+
+**操作方法**
+
+此题传入参数为要删除的节点，这意味着我们**无法访问之前的节点**，也就无法通过修改前面节点的指向来实现删除。
+
+对于链表这种不连续存储的数据结构来讲，**我们只关心它存储的值**，所以我们可以有如下操作。
+
+不妨记传入的欲删除节点为 `x` ，它后面的两个节点依次为 `y` , `z`。
+
+先将 `y` 的 `val` 赋给 `x`，再将 `x` 指向 `z` ，即可删除 `y` 。
+
+**代码实现**
+
+```java
+class Solution {
+    public void deleteNode(ListNode node) {
+        node.val = node.next.val;
+        node.next = node.next.next;
+    }
+}
+```
+
+## 力扣 83. 删除排序链表中的重复元素
+
+https://leetcode-cn.com/problems/remove-duplicates-from-sorted-list/
+
+快慢指针，与一维数组的快慢指针操作非常相似，只需要在处理完之后，将 `slow` 所指节点的 `next` 设为 `null` ，将后面的多余部分链表丢弃即可。
+```java
+class Solution {
+    public ListNode deleteDuplicates(ListNode head) {
+        //针对长度0、1、2的链表写特判
+        if (head == null) return head;
+        if (head.next == null) return head;
+        if (head.next.next == null) {
+            if (head.val == head.next.val) {
+                head.next = null;
+                return head;
+            } else {
+                return head;
+            }
+        }
+        //快慢指针
+        ListNode slow, fast;
+        slow = head;
+        fast = head;
+        while (fast.next != null) {
+            while (slow.val == fast.val && fast.next != null) {
+                fast = fast.next;
+            }
+            if (fast.next != null) {
+                slow = slow.next;
+                slow.val = fast.val;
+            }
+        }
+        if (fast.val > slow.val) { 
+            //注意，此处只有写大于号才能准确判定还有未出现的数需要前移
+            slow = slow.next;
+            slow.val = fast.val;
+        }
+        slow.next = null;
+        return head;
+    }
+}
+```
+
+## 剑指Offer 06. 从尾到头打印链表
+
+https://leetcode-cn.com/problems/cong-wei-dao-tou-da-yin-lian-biao-lcof/
+
+使用辅助栈，遍历链表，全部压入再逐个弹出。
+
+```java
+class Solution {
+    public int[] reversePrint(ListNode head) {
+        Stack<Integer> stk = new Stack<Integer>();
+        ListNode x;
+        int len = 0;
+        for (x = head; x != null; x = x.next) {
+            stk.push(x.val);
+            len++;
+        }
+        int[] rec = new int[len];
+        for (int i = 0; i < len; i++) {
+            rec[i] = stk.pop();
+        }
+        return rec;
+    }
+}
+```
+
 ## 力扣 206. 反转链表
 
-三指针
+**三指针**
 
 ```cpp
 struct ListNode* reverseList(struct ListNode* head){
@@ -27,6 +256,25 @@ struct ListNode* reverseList(struct ListNode* head){
     cur->next = pre;
 
     return cur;
+}
+```
+
+**辅助栈法**
+```java
+class Solution {
+    public ListNode reverseList(ListNode head) {
+        if (head == null) return null;
+        if (head.next == null) return head;
+        Stack<Integer> stk = new Stack<Integer>();
+        ListNode x,y;
+        for (x = head; x != null; x = x.next) {
+            stk.push(x.val);
+        }
+        for (y = head; y != null; y = y.next) {
+            y.val = stk.pop();
+        }
+        return head;
+    }
 }
 ```
 
