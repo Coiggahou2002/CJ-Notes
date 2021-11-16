@@ -9,9 +9,7 @@ User Datagram Protocol，用户数据报协议.
 udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 ```
 
-一个 UDP socket 由一个二元组标识：
-
-$$(IP Address, \ Port\  Number)$$
+一个 UDP socket 由一个二元组标识：*(IP Address*, *Port Number)*
 
 ## 优点
 
