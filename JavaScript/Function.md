@@ -24,3 +24,30 @@ arguments对象的长度是根据传入的参数个数，而非定义函数时�
 
 如果在ECMAScript中定义了两个同名函数，则后定义的会覆盖先定义的
 
+
+
+
+
+### bind
+
+`Function.prototype.bind(obj)`
+
+为一个函数手动指定 `this` 的含义，返回有效的新函数
+
+```javascript
+function func() {
+  console.log(this.target.toString());
+}
+
+let xm = {
+  target: [1, 2, 3],
+};
+
+const new_func = func.bind(xm);
+
+new_func();
+
+```
+
+
+
