@@ -8,9 +8,15 @@
 
 `button` 按钮
 
+`checkbox` 复选框
+
 attributes 对大小写敏感
 
 标签严格闭合
+
+所有标签共同支持的 props：
+
+![](https://cjpark-1304138896.cos.ap-guangzhou.myqcloud.com/note_img/20211201102517.png)
 
 ## 数据绑定
 
@@ -74,6 +80,6 @@ item: {
 
 ## 引用
 
- import 有作用域的概念，即只会 import 目标文件中定义的 template，而不会 import 目标文件中 import 的 template，简言之就是 import 不具有递归的特性
+import 有作用域的概念，即只会 import 目标文件中定义的 template，而不会 import 目标文件中 import 的 template，简言之就是 import 不具有递归的特性
 
 include 可以将目标文件中除了 `<template/> <wxs/>` 外的整个代码引入，相当于是将除了 `<template/>` 和 `<wxs/>` 外的代码都拷贝到 include 的位置
