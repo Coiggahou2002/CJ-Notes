@@ -4,6 +4,8 @@
 
 ### div 垂直居中的办法
 
+方法一
+
 ```css
 // 子元素
 .loginCard {
@@ -17,6 +19,22 @@
   height: 100%;
 }
 ```
+
+方法二
+
+```css
+#dad {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+#son {
+    // do nothing
+}
+```
+
+
 
 ### 背景图无重复无拉伸自适应
 
