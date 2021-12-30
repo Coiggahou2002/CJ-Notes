@@ -1,28 +1,37 @@
-多版本安装
+# NodeJS
 
-`nvm-windows`
+Node 赋予了 JavaScript 文件 I/O 和网络功能
 
-https://github.com/coreybutler/nvm-windows/releases
+Node 的核心模块相当于其他语言的标准库
 
-+ `nvm arch`：显示node是运行在32位还是64位。
-+ `nvm install <version> [arch]` ：安装node， version是特定版本也可以是最新稳定版本latest。可选参数arch指定安装32位还是64位版本，默认是系统位数。可以添加--insecure绕过远程服务器的SSL。
-+ `nvm list [available]` ：显示已安装的列表。可选参数available，显示可安装的所有版本。list可简化为ls。
-+ `nvm on` ：开启node.js版本管理。
-+ `nvm off` ：关闭node.js版本管理。
-+ `nvm proxy [url]` ：设置下载代理。不加可选参数url，显示当前代理。将url设置为none则移除代理。
-+ `nvm node_mirror [url]` ：设置node镜像。默认是https://nodejs.org/dist/。如果不写url，则使用默认url。设置后可至安装目录settings.txt文件查看，也可直接在该文件操作。
-+ `nvm npm_mirror [url]` ：设置npm镜像。https://github.com/npm/cli/archive/。如果不写url，则使用默认url。设置后可至安装目录settings.txt文件查看，也可直接在该文件操作。
-+ `nvm uninstall <version>` ：卸载指定版本node。
-+ `nvm use [version] [arch]` ：使用制定版本node。可指定32/64位。
-+ `nvm root [path]` ：设置存储不同版本node的目录。如果未设置，默认使用当前目录。
-+ `nvm version` ：显示nvm版本。version可简化为v。
+文件系统库：fs、path
+
+TCP 客户端和服务端库：net
+
+HTTP 库：http 和 https
+
+域名解析库：dns
+
+测试断言库：assert
+
+用于查询平台信息的操作系统库：os
+
+Node 程序主要有：
+
++ Web 应用（如用 Express 框架构建的应用）
++ 命令行工具（如 npm, gulp, Webpack）
++ 后台程序
++ 桌面程序（如 Electron）
+
+## 模块化
+
+`require` 是 Node 中为数不多的**同步 I/O** 操作
 
 
 
+如果 Node `require` 引入的时候没有写明文件相对位置关系，则查找文件的顺序是：
 
+1. Node 核心模块
+2. node_modules
+3. 环境变量 `NODE_PATH` 指定的目录下
 
-
-
-历史版本
-
-https://nodejs.org/zh-cn/download/releases/
