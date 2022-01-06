@@ -53,3 +53,32 @@ let maximum = Math.max(...arr) //将数组展开成参数列表，可以求出ma
 const arr1 = ['JAN', 'FEB', 'MAR', 'APR', 'MAY'];
 let arr2 = [...arr1]; //这样就完成了拷贝，三个点相当于拆散数组
 ```
+
+## 排序
+
+元素类型为基本数据类型：
+
+```javascript
+const arr = [1,8,4,2,3];
+arr.sort();  //默认升序排序，[1,2,3,4,8]
+arr.sort((a,b) => a - b); //升序排序，[1,2,3,4,8]
+arr.sort((a,b) => b - a); //降序排序，[8,4,3,2,1]
+```
+
+元素类型为对象，希望根据对象某个属性来排序：
+
+```javascript
+const arr = [
+  { id: "123", name: "sfjsdf" },
+  { id: "67", name: "we" },
+  { id: "144", name: "ggg" },
+  { id: "22", name: "124fddfs" },
+  { id: "199", name: "iului" },
+]
+//根据id属性升序排序（先从字符串转数字）
+arr.sort((a,b) => parseInt(a.id) - parseInt(b.id));
+```
+
+传入的自定义比较器函数中，返回值最好不要用 `>`, `<` 这种产出布尔值的表达式（曾经出现过场景 bug，踩过坑），因为比较器不是根据 `true` 和 `false` 去执行比较行为的，而是根据正、负、零返回值，可以参考 MDN docs 关于自定义比较器函数的返回值的说明：
+
+![](https://cjpark-1304138896.cos.ap-guangzhou.myqcloud.com/note_img/20211231165735.png)
